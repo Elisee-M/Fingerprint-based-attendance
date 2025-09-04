@@ -1,13 +1,14 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { GraduationCap, Mail, Lock } from 'lucide-react';
+import { firebaseAuth } from '@/lib/firebase-auth';
 
 interface LoginFormProps {
-  onLogin: (email: string, password: string) => Promise<void>;
+  onLogin: (userData: any) => void;
 }
 
 const LoginForm = ({ onLogin }: LoginFormProps) => {
@@ -20,7 +21,8 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     setLoading(true);
     
     try {
-      await onLogin(email, password);
+      const result = await firebaseAuth.signIn(email, password);
+      onLogin(result.user);
       toast({
         title: "Login Successful",
         description: "Welcome to ESSA Nyarugunga Admin Panel",
@@ -28,7 +30,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     } catch (error) {
       toast({
         title: "Login Failed",
-        description: "Invalid email or password",
+        description: error instanceof Error ? error.message : "Invalid email or password",
         variant: "destructive",
       });
     } finally {

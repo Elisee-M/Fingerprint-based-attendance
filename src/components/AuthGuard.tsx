@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { firebaseAuth } from '@/lib/firebase';
+import { firebaseAuth } from '@/lib/firebase-auth';
 import LoginForm from './LoginForm';
 
 interface AuthGuardProps {
@@ -15,15 +15,25 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     const currentUser = firebaseAuth.getCurrentUser();
     setUser(currentUser);
     setLoading(false);
+
+    // Listen to auth state changes
+    const unsubscribe = firebaseAuth.onAuthStateChange((authUser) => {
+      if (authUser) {
+        // User is signed in, get their role from localStorage
+        const currentUser = firebaseAuth.getCurrentUser();
+        setUser(currentUser);
+      } else {
+        // User is signed out
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      const result = await firebaseAuth.signIn(email, password);
-      setUser(result.user);
-    } catch (error) {
-      throw error;
-    }
+  const handleLogin = (userData: any) => {
+    setUser(userData);
   };
 
   const handleLogout = async () => {

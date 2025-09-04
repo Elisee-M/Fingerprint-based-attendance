@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { firebaseAuth } from '@/lib/firebase';
+import { firebaseAuth } from '@/lib/firebase-auth';
 import { toast } from '@/hooks/use-toast';
 import { Lock, Key } from 'lucide-react';
 
@@ -12,7 +12,6 @@ const ChangePassword = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
@@ -40,13 +39,13 @@ const ChangePassword = () => {
 
     setLoading(true);
     try {
-      await firebaseAuth.changePassword(formData.currentPassword, formData.newPassword);
+      await firebaseAuth.changePassword(formData.newPassword);
       toast({
         title: "Password Changed",
         description: "Your password has been updated successfully.",
       });
       
-      setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setFormData({ newPassword: '', confirmPassword: '' });
       setIsDialogOpen(false);
     } catch (error: any) {
       toast({
@@ -78,16 +77,6 @@ const ChangePassword = () => {
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700">Current Password</label>
-            <Input
-              type="password"
-              value={formData.currentPassword}
-              onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-              className="mt-1 bg-white border-orange-300 focus:border-orange-500"
-              required
-            />
-          </div>
           <div>
             <label className="text-sm font-medium text-gray-700">New Password</label>
             <Input

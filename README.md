@@ -1,73 +1,125 @@
-# Welcome to your Lovable project
+# Firebase Authentication Implementation
 
-## Project info
+## Overview
+This application has been updated to use Firebase Authentication for secure user management instead of storing plain-text passwords in the database.
 
-**URL**: https://lovable.dev/projects/9a68dad8-f9c5-4ee3-b053-40a97c3cdb55
+## Authentication System
 
-## How can I edit this code?
+### **Steps Overview:**
 
-There are several ways of editing your application.
+#### 1. **Login Process**
+- **Firebase Auth Login**: Uses `signInWithEmailAndPassword` from Firebase Authentication
+- **Role Retrieval**: Fetches user role from Firebase Realtime Database (`users/{UID}`)
+- **Session Management**: Stores user data (without password) in localStorage
+- **Redirect**: Directs to appropriate interface based on role (admin/reguser)
 
-**Use Lovable**
+#### 2. **Add User Process** (Admin Only)
+- **Firebase Auth Creation**: Uses `createUserWithEmailAndPassword` to create Firebase Auth account
+- **Database Storage**: Stores user metadata `{ name, role }` in Realtime Database at `users/{UID}`
+- **No Password Storage**: Passwords are securely handled by Firebase Auth only
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9a68dad8-f9c5-4ee3-b053-40a97c3cdb55) and start prompting.
+#### 3. **Change Password Process** 
+- **Current User Method**: Uses Firebase Auth `updatePassword` for currently logged-in users
+- **Email Reset Method**: Uses `sendPasswordResetEmail` for secure password reset via email
+- **No Database Updates**: Password changes handled entirely by Firebase Auth
 
-Changes made via Lovable will be committed automatically to this repo.
+#### 4. **Delete User Process** (Admin Only)
+- **Database Removal**: Removes user data from `users/{UID}` in Realtime Database  
+- **Auth Cleanup**: Note - Firebase Auth user deletion requires admin SDK (production setup needed)
+- **UI Feedback**: Shows appropriate messages for successful/failed operations
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## Database Structure
+```json
+{
+  "users": {
+    "firebase_uid_123": {
+      "name": "Alice Admin", 
+      "role": "admin"
+    },
+    "firebase_uid_456": {
+      "name": "Bob User",
+      "role": "reguser"  
+    }
+  }
+}
 ```
 
-**Edit a file directly in GitHub**
+## Security Improvements
+- ✅ **No Plain Text Passwords**: All password handling done by Firebase Auth
+- ✅ **Secure Session Management**: Firebase Auth state management 
+- ✅ **Role-Based Access**: User roles stored separately from authentication
+- ✅ **Password Reset**: Email-based secure password reset flow
+- ✅ **Separation of Concerns**: Authentication vs Authorization data separated
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Setup Instructions
 
-**Use GitHub Codespaces**
+### 1. **Update Firebase Configuration**
+Edit `src/lib/firebase-config.ts` with your actual Firebase project credentials:
+```javascript
+const firebaseConfig = {
+  apiKey: "your-actual-api-key",
+  authDomain: "your-project.firebaseapp.com", 
+  databaseURL: "https://your-project-default-rtdb.firebaseio.com/",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "your-app-id"
+};
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 2. **Enable Firebase Authentication**
+- Go to Firebase Console → Authentication → Sign-in method
+- Enable "Email/Password" provider
 
-## What technologies are used for this project?
+### 3. **Configure Database Security Rules**
+Set up Realtime Database rules for secure access:
+```json
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() == 'admin'"
+      }
+    }
+  }
+}
+```
 
-This project is built with:
+### 4. **Create Initial Admin User**
+1. Use Firebase Console to manually create first admin user
+2. Add admin role to database:
+```json
+{
+  "users": {
+    "admin_firebase_uid": {
+      "name": "Admin User",
+      "role": "admin"
+    }
+  }
+}
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Key Files Modified
 
-## How can I deploy this project?
+| File | Purpose |
+|------|---------|
+| `src/lib/firebase-config.ts` | Firebase initialization and configuration |
+| `src/lib/firebase-auth.ts` | Authentication functions and user management |
+| `src/components/LoginForm.tsx` | Login interface using Firebase Auth |
+| `src/components/ManageUsers.tsx` | Admin user management interface |
+| `src/components/ChangePassword.tsx` | Password management with Firebase Auth |
+| `src/components/AuthGuard.tsx` | Authentication wrapper component |
 
-Simply open [Lovable](https://lovable.dev/projects/9a68dad8-f9c5-4ee3-b053-40a97c3cdb55) and click on Share -> Publish.
+## Migration Benefits
+- **Enhanced Security**: No more plain-text password storage
+- **Professional Authentication**: Industry-standard Firebase Auth
+- **Better UX**: Email password reset functionality  
+- **Scalability**: Proper separation of authentication vs application data
+- **Maintainability**: Cleaner, more secure codebase
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Production Considerations
+- **User Deletion**: For complete user deletion from Firebase Auth, implement a Cloud Function with Admin SDK
+- **Email Templates**: Customize Firebase Auth email templates for password reset
+- **Security Rules**: Fine-tune database security rules based on your requirements
+- **Monitoring**: Set up Firebase Auth monitoring and analytics

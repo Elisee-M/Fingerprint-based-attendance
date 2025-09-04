@@ -1,6 +1,6 @@
 
-// Main Firebase module - exports all functionality
-export { firebaseConfig, TRADE_OPTIONS, isWorkingDay } from './firebase-config';
+// Main Firebase module - exports all functionality  
+export { TRADE_OPTIONS, isWorkingDay } from './firebase-config';
 export { firebaseDatabase } from './firebase-database';
 export { firebaseAuth } from './firebase-auth';
 export { firebaseSettings } from './firebase-settings';
