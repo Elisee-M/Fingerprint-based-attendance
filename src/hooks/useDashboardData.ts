@@ -72,7 +72,7 @@ export const useDashboardData = () => {
     };
   }, [loadDashboardData]);
 
-  // Simple end day function - saves current data to history only
+  // End day function - saves current data to history and resets attendance
   const endDay = async () => {
     try {
       const currentDate = new Date().toISOString().split('T')[0];
@@ -90,7 +90,37 @@ export const useDashboardData = () => {
         body: JSON.stringify(teachers)
       });
       
-      console.log('Day ended successfully. Data saved to history.');
+      // Reset time_in and time_out for all teachers while keeping other data
+      if (teachers && Object.keys(teachers).length > 0) {
+        const resetTeachers = {};
+        
+        for (const teacherId in teachers) {
+          resetTeachers[teacherId] = {
+            ...teachers[teacherId],
+            time_in: '',
+            time_out: '',
+            status: 'absent'
+          };
+        }
+        
+        console.log('Resetting teachers data:', resetTeachers);
+        
+        // Save the reset teachers data
+        await fetch(`${firebaseConfig.databaseURL}teachers.json`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(resetTeachers)
+        });
+      } else {
+        console.log('No teachers found to reset');
+      }
+      
+      console.log('Day ended successfully. Data saved to history and attendance reset.');
+      
+      // Reload dashboard data to reflect changes
+      await loadDashboardData();
     } catch (error) {
       console.error('Error ending day:', error);
       throw error;
