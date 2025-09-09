@@ -60,41 +60,41 @@ Attendance data is stored in **Firebase Realtime Database**, making monitoring a
 ## 🔹 Installation & Setup
 
 1. Clone this repository:  
-   ```bash
-  (https://github.com/Elisee-M/Fingerprint-based-attendance)
-Open the project in Arduino IDE.
+   ```bash https://github.com/Elisee-M/Fingerprint-based-attendance ```
+  
+## 🔹 Installation & Setup
 
-Install required libraries via Library Manager.
+1. Open the project in **Arduino IDE**.  
+2. Install required libraries via **Library Manager**.  
+3. Configure **WiFi** and **Firebase** credentials in the `config.h` or main code file:
 
-Configure WiFi and Firebase credentials in the config.h or main code file:
-
+```cpp```
 #define WIFI_SSID "your_wifi_name"
 #define WIFI_PASSWORD "your_wifi_password"
 #define FIREBASE_HOST "your-project.firebaseio.com"
 #define FIREBASE_AUTH "your_firebase_secret"
 
-Upload the code to your ESP8266.
+4. Upload the code to your **ESP8266**. ⚡  
 
-Open the Serial Monitor to enroll fingerprints and monitor attendance.
+5. Open the **Serial Monitor** to enroll fingerprints and monitor attendance. 🖥️  
 
-🔹 How it Works
+---
 
-Teacher places finger on AS608 sensor 🖐️
+## 🔹 How it Works 🧊
 
-Sensor scans fingerprint and sends data to ESP8266 ⚡
+1. Teacher places finger on **AS608 sensor** 🖐️  
+2. Sensor scans fingerprint and sends data to **ESP8266** ⚡  
+3. ESP8266 checks fingerprint database and logs **time-in/out** in Firebase ⏱️  
+4. LCD shows scan status and teacher info 📟  
+5. Buzzer gives audio feedback:  
+   - ✅ **Success beep**  
+   - ❌ **Failure beep**  
+6. Admins can view attendance in real-time on the **web dashboard** 🌐  
 
-ESP8266 checks fingerprint database and logs time-in/out in Firebase ⏱️
+---
 
-LCD shows scan status and teacher info 📟
+## 🔹 Contribution 💡❄️
 
-Buzzer gives audio feedback:
+Fork, modify, and contribute! Keep it icy and awesome 🥶✨
 
-✅ Success beep
 
-❌ Failure beep
-
-Admins can view attendance in real-time on the web dashbo
-
-🔹 Contribution
-
-Fork, modify, and contribute! ❄️💡
