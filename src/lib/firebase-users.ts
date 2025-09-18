@@ -1,12 +1,33 @@
 
 import { firebaseConfig } from './firebase-config';
+import { auth } from './firebase-config';
+
+// Get auth token for requests
+const getAuthToken = async () => {
+  const user = auth.currentUser;
+  if (user) {
+    return await user.getIdToken();
+  }
+  return null;
+};
 
 // User credentials management
 export const firebaseUsers = {
   async getCredentials() {
     try {
-      const response = await fetch(`${firebaseConfig.databaseURL}credentials.json`);
+      const token = await getAuthToken();
+      const url = token 
+        ? `${firebaseConfig.databaseURL}credentials.json?auth=${token}`
+        : `${firebaseConfig.databaseURL}credentials.json`;
+      
+      const response = await fetch(url);
       const data = await response.json();
+      
+      if (data && data.error) {
+        console.error('Database error:', data.error);
+        return {};
+      }
+      
       return data || {};
     } catch (error) {
       console.error('Error fetching credentials:', error);
@@ -24,13 +45,24 @@ export const firebaseUsers = {
       const userId = `user${Date.now()}`;
       credentials.reguser[userId] = userData;
       
-      await fetch(`${firebaseConfig.databaseURL}credentials.json`, {
+      const token = await getAuthToken();
+      const url = token 
+        ? `${firebaseConfig.databaseURL}credentials.json?auth=${token}`
+        : `${firebaseConfig.databaseURL}credentials.json`;
+      
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials)
       });
+      
+      const data = await response.json();
+      if (data && data.error) {
+        console.error('Database error:', data.error);
+        throw new Error(data.error);
+      }
       
       return userId;
     } catch (error) {
@@ -45,13 +77,24 @@ export const firebaseUsers = {
       if (credentials.reguser && credentials.reguser[userId]) {
         delete credentials.reguser[userId];
         
-        await fetch(`${firebaseConfig.databaseURL}credentials.json`, {
+        const token = await getAuthToken();
+        const url = token 
+          ? `${firebaseConfig.databaseURL}credentials.json?auth=${token}`
+          : `${firebaseConfig.databaseURL}credentials.json`;
+        
+        const response = await fetch(url, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(credentials)
         });
+        
+        const data = await response.json();
+        if (data && data.error) {
+          console.error('Database error:', data.error);
+          throw new Error(data.error);
+        }
       }
     } catch (error) {
       console.error('Error deleting regular user:', error);

@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { GraduationCap, Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import { firebaseAuth } from '@/lib/firebase-auth';
+import ESSALogo from '@/assets/ESSA_Logo.png';
 
 interface LoginFormProps {
   onLogin: (userData: any) => void;
@@ -49,8 +50,8 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 
       <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm animate-fade-in">
         <CardHeader className="text-center pb-8 pt-8">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <GraduationCap className="w-8 h-8 text-white" />
+          <div className="mx-auto mb-4 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-300 p-2">
+            <img src={ESSALogo} alt="ESSA Logo" className="w-full h-full object-contain" />
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
             ESSA Nyarugunga

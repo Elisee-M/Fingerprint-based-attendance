@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { firebaseDb, calculateTeacherStatus } from '@/lib/firebase';
-import { firebaseConfig } from '@/lib/firebase-config';
+import { firebaseConfig, auth } from '@/lib/firebase-config';
 
 export const useDashboardData = () => {
   const [stats, setStats] = useState({
@@ -81,8 +81,16 @@ export const useDashboardData = () => {
       // Get current teachers data
       const teachers = await firebaseDb.getTeachers();
       
+      // Get auth token for history save
+      const user = auth.currentUser;
+      const token = user ? await user.getIdToken() : null;
+      
       // Save current teacher data to history
-      await fetch(`${firebaseConfig.databaseURL}history/daily/${currentDate}.json`, {
+      const historyUrl = token 
+        ? `${firebaseConfig.databaseURL}history/daily/${currentDate}.json?auth=${token}`
+        : `${firebaseConfig.databaseURL}history/daily/${currentDate}.json`;
+      
+      await fetch(historyUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +114,11 @@ export const useDashboardData = () => {
         console.log('Resetting teachers data:', resetTeachers);
         
         // Save the reset teachers data
-        await fetch(`${firebaseConfig.databaseURL}teachers.json`, {
+        const teachersUrl = token 
+          ? `${firebaseConfig.databaseURL}teachers.json?auth=${token}`
+          : `${firebaseConfig.databaseURL}teachers.json`;
+        
+        await fetch(teachersUrl, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

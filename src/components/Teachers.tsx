@@ -146,7 +146,7 @@ const Teachers = ({ onLogout, user }: TeachersProps) => {
   };
 
   const filteredTeachers = teachers.filter(teacher =>
-    teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (teacher.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (teacher.trade || teacher.subject || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 

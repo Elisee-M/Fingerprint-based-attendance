@@ -35,15 +35,32 @@ const ManageUsers = ({ onLogout, user }: ManageUsersProps) => {
     setLoading(true);
     try {
       const usersList = await firebaseAuth.getAllUsers();
-      // Add email field from the user data we have
-      setUsers(usersList.map(user => ({ 
-        ...user, 
-        email: `user-${user.uid}@example.com` // Placeholder since we don't store emails in DB
-      })));
+      
+      // Get additional user info from Firebase Auth if available
+      // Since we can't get emails directly from database, we'll show uid-based emails
+      const usersWithEmails = usersList.map(userData => {
+        // Try to get email from stored local data or use a placeholder
+        const currentUser = firebaseAuth.getCurrentUser();
+        if (userData.uid === currentUser?.uid) {
+          return {
+            ...userData,
+            email: currentUser.email || `${userData.name.toLowerCase().replace(/\s+/g, '.')}@school.edu`
+          };
+        }
+        
+        // For other users, generate a placeholder email based on their name
+        return {
+          ...userData,
+          email: `${userData.name.toLowerCase().replace(/\s+/g, '.')}@school.edu`
+        };
+      });
+      
+      setUsers(usersWithEmails);
     } catch (error) {
+      console.error('Error loading users:', error);
       toast({
         title: "Error",
-        description: "Failed to load users.",
+        description: "Failed to load users. Please check your connection and try again.",
         variant: "destructive",
       });
     } finally {

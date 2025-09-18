@@ -1,5 +1,6 @@
 
 import { firebaseConfig } from './firebase-config';
+import { auth } from './firebase-config';
 
 // Get current Rwanda date as YYYY-MM-DD (GMT+2) - manual calculation
 const getRwandaDate = () => {
@@ -9,12 +10,32 @@ const getRwandaDate = () => {
   return rwandaTime.toISOString().split('T')[0];
 };
 
+// Get auth token for requests
+const getAuthToken = async () => {
+  const user = auth.currentUser;
+  if (user) {
+    return await user.getIdToken();
+  }
+  return null;
+};
+
 // Core database operations for teachers
 export const firebaseDatabase = {
   async getTeachers() {
     try {
-      const response = await fetch(`${firebaseConfig.databaseURL}teachers.json`);
+      const token = await getAuthToken();
+      const url = token 
+        ? `${firebaseConfig.databaseURL}teachers.json?auth=${token}`
+        : `${firebaseConfig.databaseURL}teachers.json`;
+      
+      const response = await fetch(url);
       const data = await response.json();
+      
+      if (data && data.error) {
+        console.error('Database error:', data.error);
+        return {};
+      }
+      
       return data || {};
     } catch (error) {
       console.error('Error fetching teachers:', error);
@@ -24,13 +45,24 @@ export const firebaseDatabase = {
   
   async saveTeachers(teachers: any) {
     try {
-      await fetch(`${firebaseConfig.databaseURL}teachers.json`, {
+      const token = await getAuthToken();
+      const url = token 
+        ? `${firebaseConfig.databaseURL}teachers.json?auth=${token}`
+        : `${firebaseConfig.databaseURL}teachers.json`;
+      
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(teachers)
       });
+      
+      const data = await response.json();
+      if (data && data.error) {
+        console.error('Database error:', data.error);
+        throw new Error(data.error);
+      }
     } catch (error) {
       console.error('Error saving teachers:', error);
       throw error;
