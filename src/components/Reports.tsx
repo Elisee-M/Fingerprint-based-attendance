@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { firebaseDb } from '@/lib/firebase';
+import { firebaseConfig } from '@/lib/firebase-config';
+import { getAuth } from 'firebase/auth';
 import { toast } from '@/hooks/use-toast';
 import { FileText, Download, Calendar, BarChart3, AlertCircle } from 'lucide-react';
 
@@ -34,6 +35,28 @@ const Reports = ({ onLogout, user }: ReportsProps) => {
     return dates;
   };
 
+  const getAuthToken = async () => {
+    const auth = getAuth();
+    if (auth.currentUser) {
+      return await auth.currentUser.getIdToken();
+    }
+    return null;
+  };
+
+  const fetchHistoryData = async (date: string) => {
+    try {
+      const token = await getAuthToken();
+      const response = await fetch(`${firebaseConfig.databaseURL}history/daily/${date}.json${token ? `?auth=${token}` : ''}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch history data');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching history:', error);
+      return null;
+    }
+  };
+
   const handleGenerateReport = async () => {
     if (!startDate) {
       toast({
@@ -60,7 +83,7 @@ const Reports = ({ onLogout, user }: ReportsProps) => {
     try {
       if (reportType === 'daily') {
         const dateStr = startDate.toISOString().split('T')[0];
-        const historyData = await firebaseDb.getHistoryByDate(dateStr);
+        const historyData = await fetchHistoryData(dateStr);
         
         if (!historyData || Object.keys(historyData).length === 0) {
           setErrorMessage(`No attendance data found for ${dateStr}. Make sure attendance was recorded on this date.`);
@@ -82,7 +105,7 @@ const Reports = ({ onLogout, user }: ReportsProps) => {
 
         for (const date of dateRange) {
           try {
-            const historyData = await firebaseDb.getHistoryByDate(date);
+            const historyData = await fetchHistoryData(date);
             if (historyData && Object.keys(historyData).length > 0) {
               const teachersArray = Object.values(historyData);
               teachersArray.forEach((teacher: any) => {

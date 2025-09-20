@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { firebaseAuth } from '@/lib/firebase-auth';
+import { firebaseConfig } from '@/lib/firebase-config';
+import { getAuth } from 'firebase/auth';
 import { Users, UserPlus, Trash2, Shield } from 'lucide-react';
 
 interface ManageUsersProps {
@@ -27,40 +29,51 @@ const ManageUsers = ({ onLogout, user }: ManageUsersProps) => {
     role: 'reguser' as 'admin' | 'reguser'
   });
 
+  // Check if current user is admin
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
-    loadUsers();
-  }, []);
+    if (isAdmin) {
+      loadUsers();
+    }
+  }, [isAdmin]);
+
+  const getAuthToken = async () => {
+    const auth = getAuth();
+    if (auth.currentUser) {
+      return await auth.currentUser.getIdToken();
+    }
+    return null;
+  };
 
   const loadUsers = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can manage users.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const usersList = await firebaseAuth.getAllUsers();
+      const allUsers = await firebaseAuth.getAllUsers();
       
-      // Get additional user info from Firebase Auth if available
-      // Since we can't get emails directly from database, we'll show uid-based emails
-      const usersWithEmails = usersList.map(userData => {
-        // Try to get email from stored local data or use a placeholder
-        const currentUser = firebaseAuth.getCurrentUser();
-        if (userData.uid === currentUser?.uid) {
-          return {
-            ...userData,
-            email: currentUser.email || `${userData.name.toLowerCase().replace(/\s+/g, '.')}@school.edu`
-          };
-        }
-        
-        // For other users, generate a placeholder email based on their name
-        return {
-          ...userData,
-          email: `${userData.name.toLowerCase().replace(/\s+/g, '.')}@school.edu`
-        };
-      });
+      // Convert to the format expected by the component
+      const usersList = allUsers.map((userData) => ({
+        uid: userData.uid,
+        name: userData.name || 'Unknown',
+        email: 'N/A', // Email is not stored in database as per requirement
+        role: userData.role || 'reguser'
+      }));
       
-      setUsers(usersWithEmails);
+      setUsers(usersList);
     } catch (error) {
       console.error('Error loading users:', error);
       toast({
         title: "Error",
-        description: "Failed to load users. Please check your connection and try again.",
+        description: "Failed to load users. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -141,6 +154,29 @@ const ManageUsers = ({ onLogout, user }: ManageUsersProps) => {
       }
     }
   };
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
+        <Card className="max-w-md mx-4 bg-white/90 backdrop-blur-sm border border-orange-200 shadow-xl">
+          <CardContent className="p-8 text-center">
+            <div className="p-4 bg-red-100 rounded-full w-fit mx-auto mb-4">
+              <Shield className="w-8 h-8 text-red-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-4">Only administrators can manage users.</p>
+            <Button 
+              onClick={onLogout}
+              variant="outline"
+              className="border-orange-200 hover:bg-orange-50"
+            >
+              Back to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
