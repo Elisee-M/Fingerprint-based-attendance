@@ -36,7 +36,7 @@ This project implements a **real-time teacher attendance system** using a **fing
    ```bash
    git clone https://github.com/Elisee-M/Fingerprint-based-attendance.git 
 ```
-
+```
 
 ## ⚡ Installation & Setup
 
