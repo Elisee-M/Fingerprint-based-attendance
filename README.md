@@ -8,7 +8,7 @@ This project implements a **real-time teacher attendance system** using a **fing
 
 ## 🔧 Features
 
-- 🖐 **Fingerprint Enrollment & Recognition**  
+- 🖐 **Fingerprint Enrollment & Recognition**   
 - 📡 **ESP8266 Wi-Fi Module** for real-time updates  
 - 📊 **Firebase Database** storage  
 - 🧑‍🏫 Teacher **time-in recording**  
