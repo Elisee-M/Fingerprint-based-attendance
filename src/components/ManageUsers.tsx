@@ -33,10 +33,8 @@ const ManageUsers = ({ onLogout, user }: ManageUsersProps) => {
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
-    if (isAdmin) {
-      loadUsers();
-    }
-  }, [isAdmin]);
+    loadUsers();
+  }, []);
 
   const getAuthToken = async () => {
     const auth = getAuth();
@@ -47,15 +45,6 @@ const ManageUsers = ({ onLogout, user }: ManageUsersProps) => {
   };
 
   const loadUsers = async () => {
-    if (!isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "Only administrators can manage users.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     try {
       const allUsers = await firebaseAuth.getAllUsers();
@@ -72,8 +61,8 @@ const ManageUsers = ({ onLogout, user }: ManageUsersProps) => {
     } catch (error) {
       console.error('Error loading users:', error);
       toast({
-        title: "Error",
-        description: "Failed to load users. Please try again.",
+        title: "Access Denied",
+        description: "Only administrators can manage users.",
         variant: "destructive",
       });
     } finally {
@@ -155,28 +144,6 @@ const ManageUsers = ({ onLogout, user }: ManageUsersProps) => {
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
-        <Card className="max-w-md mx-4 bg-white/90 backdrop-blur-sm border border-orange-200 shadow-xl">
-          <CardContent className="p-8 text-center">
-            <div className="p-4 bg-red-100 rounded-full w-fit mx-auto mb-4">
-              <Shield className="w-8 h-8 text-red-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-            <p className="text-gray-600 mb-4">Only administrators can manage users.</p>
-            <Button 
-              onClick={onLogout}
-              variant="outline"
-              className="border-orange-200 hover:bg-orange-50"
-            >
-              Back to Dashboard
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (loading) {
     return (

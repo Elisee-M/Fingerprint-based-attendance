@@ -5,12 +5,26 @@ import { Clock } from 'lucide-react';
 const LiveClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Get Kigali time using browser's timezone support
+  const getKigaliTime = () => {
+    const now = new Date();
+    // Convert to Kigali timezone (Africa/Kigali is UTC+2)
+    const kigaliTime = new Date(now.toLocaleString("en-US", {timeZone: "Africa/Kigali"}));
+    return kigaliTime;
+  };
+
   useEffect(() => {
+    // Set initial time
+    setCurrentTime(getKigaliTime());
+
+    // Update every second
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      setCurrentTime(getKigaliTime());
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   const formatDate = (date: Date) => {
@@ -41,7 +55,7 @@ const LiveClock = () => {
           {formatDate(currentTime)}
         </div>
         <div className="text-lg font-bold text-blue-600">
-          {formatTime(currentTime)} (Local Time)
+          {formatTime(currentTime)} (Kigali Time)
         </div>
       </div>
     </div>

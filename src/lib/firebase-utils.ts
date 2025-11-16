@@ -48,8 +48,8 @@ export const calculateTeacherStatus = (timeIn: string, timeOut: string, settings
     if (checkOutMinutes < workEndMinutes) {
       statusArray.push('left_early');
     } else {
-      // If left at or after working hours end, add gone home on time status
-      statusArray.push('gone_home_on_time');
+      // If left at or after working hours end, add left on time status
+      statusArray.push('left_on_time');
     }
   }
   

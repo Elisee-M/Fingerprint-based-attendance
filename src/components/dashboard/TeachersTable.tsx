@@ -15,7 +15,7 @@ const getStatusBadgeStyle = (status: string) => {
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     case 'left_early':
       return 'bg-orange-100 text-orange-800 border-orange-200';
-    case 'gone_home_on_time':
+    case 'left_on_time':
       return 'bg-blue-100 text-blue-800 border-blue-200';
     case 'absent':
       return 'bg-red-100 text-red-800 border-red-200';
@@ -25,7 +25,7 @@ const getStatusBadgeStyle = (status: string) => {
 };
 
 const formatStatusLabel = (status: string) => {
-  return status.replace('left_early', 'left early').replace('gone_home_on_time', 'gone home on time');
+  return status.replace('left_early', 'left early').replace('left_on_time', 'left on time');
 };
 
 const TeachersTable = ({ allTeachers }: TeachersTableProps) => {

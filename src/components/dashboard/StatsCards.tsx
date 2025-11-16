@@ -68,7 +68,7 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
 
       <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-medium text-purple-100">Gone Home On Time</CardTitle>
+          <CardTitle className="text-sm font-medium text-purple-100">Left On Time</CardTitle>
           <Home className="w-6 h-6 text-purple-200" />
         </CardHeader>
         <CardContent>

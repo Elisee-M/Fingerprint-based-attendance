@@ -35,9 +35,9 @@ export const useDashboardData = () => {
       const leftEarlyTeachers = teachersArray.filter(t => t.status.includes('left_early')).length;
       const absentTeachers = teachersArray.filter(t => t.status === 'absent').length;
       
-      // Calculate teachers who went home on time
+      // Calculate teachers who left on time
       const goneHomeOnTimeTeachers = teachersArray.filter(t => 
-        t.status.includes('gone_home_on_time')
+        t.status.includes('left_on_time')
       ).length;
 
       setStats({
@@ -78,14 +78,26 @@ export const useDashboardData = () => {
       const currentDate = new Date().toISOString().split('T')[0];
       console.log('Ending day and saving data to history for date:', currentDate);
 
-      // Get current teachers data
-      const teachers = await firebaseDb.getTeachers();
+      // Get current teachers data and settings
+      const [teachers, settings] = await Promise.all([
+        firebaseDb.getTeachers(),
+        firebaseDb.getSettings()
+      ]);
       
       // Get auth token for history save
       const user = auth.currentUser;
       const token = user ? await user.getIdToken() : null;
       
-      // Save current teacher data to history
+      // Calculate status for each teacher before saving to history
+      const teachersWithStatus = {};
+      for (const teacherId in teachers) {
+        teachersWithStatus[teacherId] = {
+          ...teachers[teacherId],
+          status: calculateTeacherStatus(teachers[teacherId].time_in, teachers[teacherId].time_out, settings)
+        };
+      }
+      
+      // Save teacher data with calculated status to history
       const historyUrl = token 
         ? `${firebaseConfig.databaseURL}history/daily/${currentDate}.json?auth=${token}`
         : `${firebaseConfig.databaseURL}history/daily/${currentDate}.json`;
@@ -95,7 +107,7 @@ export const useDashboardData = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(teachers)
+        body: JSON.stringify(teachersWithStatus)
       });
       
       // Reset time_in and time_out for all teachers while keeping other data
