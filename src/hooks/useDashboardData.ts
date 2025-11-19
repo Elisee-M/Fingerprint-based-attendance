@@ -22,10 +22,27 @@ export const useDashboardData = () => {
         firebaseDb.getSettings()
       ]);
       
-      const teachersArray = Object.values(teachersData).map((teacher: any) => ({
-        ...teacher,
-        status: calculateTeacherStatus(teacher.time_in, teacher.time_out, settings)
-      }));
+      // Calculate status for each teacher and update in database
+      const teachersWithStatus = {};
+      const teachersArray = [];
+      
+      for (const teacherId in teachersData) {
+        const teacher = teachersData[teacherId];
+        const calculatedStatus = calculateTeacherStatus(teacher.time_in, teacher.time_out, settings);
+        
+        const teacherWithStatus = {
+          ...teacher,
+          status: calculatedStatus
+        };
+        
+        teachersWithStatus[teacherId] = teacherWithStatus;
+        teachersArray.push(teacherWithStatus);
+      }
+      
+      // Save updated statuses back to database
+      if (Object.keys(teachersWithStatus).length > 0) {
+        await firebaseDb.saveTeachers(teachersWithStatus);
+      }
 
       const totalTeachers = teachersArray.length;
       
